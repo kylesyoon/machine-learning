@@ -13680,7 +13680,24 @@ kiRJkiRJUi3+P4G25UIUxE6UAAAAAElFTkSuQmCC
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><strong>Answer:</strong> <code>waypoint</code>, <code>left</code>, and <code>light</code> are the most relevant for safety and efficiency. <code>waypoint</code> and <code>left</code> are features that regard efficiency. <code>waypoint</code> trains the car to take the most efficient route, i.e. the shortest route. This overlaps with what <code>deadline</code> does, so it is not the most relevant. <code>left</code> allows the Smartcar to navigate the intersection faster than it would without that knowledge. For example, if <code>left</code> car is taking a right, then the Smartcar agent can take a right on red sooner than it would be able to after it turns green. However, knowing what the car on the right will do provides no increased efficiency. <code>oncoming</code> also does not provide valuable insight as it is assumed that the agent will take a left without problem even if the <code>oncoming</code> car is going forward. <code>light</code> provides the general rules for when to go through the intersection which is critical for keeping the passenger safe.</p>
+<p><strong>Answer:</strong> <code>waypoint</code>, <code>left</code>, and <code>light</code> are the most relevant for safety and efficiency.</p>
+<p><code>waypoint</code> and <code>left</code> are features that regard efficiency. <code>waypoint</code> trains the car to take the most efficient route, i.e. the shortest route. This overlaps with what <code>deadline</code> does, so it is not the most relevant.</p>
+<p><code>left</code> allows the Smartcar to navigate the intersection faster than it would without that knowledge. For example, if <code>left</code> car is taking a right, then the Smartcar agent can take a right on red sooner than it would be able to after it turns green. However, knowing what the car on the right will do provides no increased efficiency. <code>oncoming</code> also does not provide valuable insight as it is assumed that the agent will take a left without problem even if the <code>oncoming</code> car is going forward. Code in <code>environment.py</code> proves this:</p>
+
+<pre><code># Agent wants to drive left:
+    elif action == 'left':
+        if light != 'green': # Running a red light
+            violation = 2 # Major violation
+            if inputs['left'] == 'forward' or inputs['right'] == 'forward': # Cross traffic
+                violation = 4 # Accident
+            elif inputs['oncoming'] == 'right': # Oncoming car turning right
+                violation = 4 # Accident
+        else: # Green light
+            heading = (heading[1], -heading[0]) # Valid move. We assume the cab will wait for the lane to be clear on a green light, before taking the left turn.
+
+</code></pre>
+<p>If the agent is taking a left and the light is green, it is assumed the agent will wait for the lane to clear to turn, therefore making it valid turn. Thus, oncoming is not necessary.</p>
+<p><code>light</code> provides the general rules for when to go through the intersection which is critical for keeping the passenger safe.</p>
 <p>Therefore, the features that are <strong>most relevant</strong> are <code>waypoint</code>, <code>light</code>, and <code>left</code>.</p>
 
 </div>
@@ -13715,10 +13732,10 @@ kiRJkiRJUi3+P4G25UIUxE6UAAAAAElFTkSuQmCC
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><strong>Answer:</strong></p>
-<p><code>waypoint</code>: forward, left, right, None (4)</p>
+<p><code>waypoint</code>: forward, left, right (3)</p>
 <p><code>light</code>: True, False (2)</p>
 <p><code>left</code>: forward, left, right, None (4)</p>
-<p>Total number of possible states: 4 x 2 x 4 = <strong>32</strong></p>
+<p>Total number of possible states: 3 x 2 x 4 = <strong>24</strong></p>
 <p>Given that there are 20 training trials that run numerous act on states, it seems like it would be possible for the agent to develop a policy for each state.</p>
 
 </div>
